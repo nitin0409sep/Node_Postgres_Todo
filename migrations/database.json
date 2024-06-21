@@ -1,0 +1,11 @@
+{
+    "dev": {
+        "driver":"pg",
+        "user":"postgres",
+        "host":"localhost",
+        "password":"123",
+        "database":"todo1",
+        "port":"5400",
+        "schema":"public"
+    }
+}
