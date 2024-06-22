@@ -8,13 +8,14 @@ const {
   updateItem,
   deleteItem,
   deleteMultipleItems,
+  deleteAllItems,
 } = require("../controller/todo.controller");
 
 // Routes
 const route = express.Router();
 
 // Get All or Specific Item By ID
-route.get("/api/data/view-list/:id?", (req, res, next) => {
+route.get("/view-list/:id?", (req, res, next) => {
   const { id } = req.params;
   if (id) {
     getSpecificItem(req, res, next);
@@ -24,22 +25,20 @@ route.get("/api/data/view-list/:id?", (req, res, next) => {
 });
 
 // Add Item or Items
-route.post("/api/data/addItem", postItem);
+route.post("/addItem", postItem);
 
 // Update Item
-route.put(
-  "/api/data/updateItem/:id?",
-  (req, res, next) => {
-    if (!req.params.id) {
-      return res.status(400).json({ message: "ID parameter is required" });
-    }
-    next();
-  },
+route.put("/updateItem/:id?", (req, res, next) => {
+  if (!req.params.id) {
+    return res.status(400).json({ message: "ID parameter is required" });
+  }
+  next();
+},
   updateItem
 );
 
 // Delete Item
-route.delete("/api/data/deleteItem/:id?", (req, res, next) => {
+route.delete("/deleteItem/:id?", (req, res, next) => {
   if (req.query.id && req.params.id) {
     return res.status(400).json({
       message:
@@ -59,5 +58,8 @@ route.delete("/api/data/deleteItem/:id?", (req, res, next) => {
     deleteMultipleItems(req, res);
   }
 });
+
+// Delete All Items
+route.delete("/deleteAllItems", deleteAllItems);
 
 module.exports = route;

@@ -5,7 +5,7 @@ module.exports.getAllItems = async (page = 0, limit = 10) => {
   try {
     const offset = page * limit;
     //   const query = `SELECT * FROM todo where value LIKE '%${search}%'`;
-    const query = `SELECT * FROM todo limit ${limit} OFFSET ${offset}`;
+    const query = `SELECT * FROM todo ORDER BY VALUE limit ${limit} OFFSET ${offset}`;
     const countQuery = `SELECT COUNT(*) FROM TODO`;
     const { rows } = await pool.query(query);
     const toalCount = await pool.query(countQuery);
@@ -110,5 +110,23 @@ module.exports.deleteMultipleItems = async (ids, res) => {
     await pool.query("ROLLBACK");
     console.error(err);
     throw err;
+  }
+};
+
+// Delete All Items
+module.exports.deleteAllItems = async (req, res) => {
+  try {
+    const { rows } = await pool.query('Select count(value) from todo');
+
+    if (!(+rows[0].count)) {
+      return { message: "No Items Exists" };
+    };
+
+    const query = `TRUNCATE TABLE todo;`;
+    await pool.query(query);
+
+    return { message: "All items have been deleted successfully" };
+  } catch (err) {
+    return res.status(500).json({ error: "An error occurred while deleting items" });
   }
 };

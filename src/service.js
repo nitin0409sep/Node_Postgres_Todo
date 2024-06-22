@@ -6,28 +6,27 @@ require("dotenv").config();
 
 const cors = require("cors");
 
-const bodyParser = require("body-parser");
-
 const PORT = process.env.PORT;
 
 // DB Connection
 require("../db/connection");
 
-app.use(express.urlencoded({ extended: true }));
-
-app.use(express.json());
-
 // CORS
 app.use(cors());
 
-// Body Parser
-app.use(bodyParser.json());
+// Use this middleware to parse incoming requests with URL-encoded payloads (e.g., form submissions)
+app.use(express.urlencoded({ extended: true }));
+
+// Use this middleware to parse incoming requests with JSON payloads.
+app.use(express.json());
 
 // Routes File Link
+const profile = require("../routes/profile-route");
 const todo = require("../routes/to-do-routes");
 
 // Routes
-app.use(todo);
+app.use('/api/data/profile', profile);
+app.use('/api/data/todo', todo);
 
 // Port
 app.listen(PORT, () => {

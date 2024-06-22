@@ -126,3 +126,20 @@ module.exports.deleteMultipleItems = async (req, res) => {
       .json({ message: "Error deleting items", error: error.message });
   }
 };
+
+// DELETE ALL ITEMS
+module.exports.deleteAllItems = async (req, res) => {
+  try {
+    const value = await dbHelper.deleteAllItems();
+
+    res.json({
+      message: value.message,
+      error: null,
+      status: "OK",
+    });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Error deleting items", error: err });
+  }
+}
