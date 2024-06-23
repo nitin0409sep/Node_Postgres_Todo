@@ -1,15 +1,15 @@
-const { pool } = require("../db/connection");
+const { pool } = require("../db-config/connection");
 
 module.exports.getProfile = async () => {
-    try{
+    try {
         const query = 'Select email from users';
         const res = await pool.query(query);
-             
+
         const rows = res.rows;
         return {
             rows: rows
         };
-    }catch(err){
+    } catch (err) {
         console.error("Error executing query:", error);
         throw error;
     }

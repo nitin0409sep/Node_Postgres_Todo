@@ -1,34 +1,39 @@
 const express = require("express");
+const cookieParser = require('cookie-parser');
+const cors = require("cors");
+const dotenv = require("dotenv");
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
-
-require("dotenv").config();
-
-const cors = require("cors");
-
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 
 // DB Connection
-require("../db/connection");
+require("../db-config/connection.js");
 
-// CORS
+// Middleware
 app.use(cors());
-
-// Use this middleware to parse incoming requests with URL-encoded payloads (e.g., form submissions)
-app.use(express.urlencoded({ extended: true }));
-
-// Use this middleware to parse incoming requests with JSON payloads.
-app.use(express.json());
-
-// Routes File Link
-const profile = require("../routes/profile-route");
-const todo = require("../routes/to-do-routes");
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true })); // Use this middleware to parse incoming requests with URL-encoded payloads (e.g., form submissions)
+app.use(express.json()); // Use this middleware to parse incoming requests with JSON payloads.
 
 // Routes
-app.use('/api/data/profile', profile);
-app.use('/api/data/todo', todo);
+const authRoutes = require("../routes/auth.route.js");
+const profileRoutes = require("../routes/profile.route.js");
+const todoRoutes = require("../routes/to-do.routes.js");
 
-// Port
+app.use('/api/data/users', authRoutes);
+app.use('/api/data/profile', profileRoutes);
+app.use('/api/data/todo', todoRoutes);
+
+// Error handling middleware 
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
+
+// Start Server
 app.listen(PORT, () => {
-  console.log(`Server has started at port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

@@ -1,4 +1,4 @@
-const { pool } = require("../db/connection");
+const { pool } = require("../db-config/connection");
 
 // Get ALl Items
 module.exports.getAllItems = async (page = 0, limit = 10) => {
