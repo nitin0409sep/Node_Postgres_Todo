@@ -1,4 +1,6 @@
 const { pool } = require('../db-config/connection');
+const bcrypt = require('bcrypt');
+
 
 // GET ALL USERS
 module.exports.getUsers = async () => {
@@ -31,16 +33,22 @@ module.exports.registerUser = async (user_name, email, password) => {
     }
 }
 
-
 // LOGIN USERS
 module.exports.loginUser = async (email, password) => {
     try {
-        console.log("Login User");
+        const query = 'Select * from users where email = $1'
+        const { rows } = await pool.query(query, [email]);
+
+        // Validate Password
+        const validPassword = await bcrypt.compare(password, rows[0].password);
+
+        if (!validPassword) return false
+
+        return true;
     } catch (err) {
         throw err;
     }
 }
-
 
 // Check user already exists or not
 module.exports.checkUserExists = async (email) => {
