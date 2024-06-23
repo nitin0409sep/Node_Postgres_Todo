@@ -4,7 +4,9 @@ const dbHelper = require("../db-helper/todoqueries");
 module.exports.getItems = async (req, res) => {
   try {
     const { search, page, limit } = req.query;
-    const values = await dbHelper.getAllItems(page, limit);
+    const user_id = req.user.unique_id;
+
+    const values = await dbHelper.getAllItems(user_id, page, limit);
 
     if (search !== undefined) {
       const data = values.rows.filter((val) => {
@@ -32,7 +34,9 @@ module.exports.getItems = async (req, res) => {
 module.exports.getSpecificItem = async (req, res) => {
   try {
     const { id } = req.params;
-    const value = await dbHelper.getSpecificItem(id);
+    const user_id = req.user.unique_id;
+    const value = await dbHelper.getSpecificItem(user_id, id);
+
     return res.status(200).json({
       data: { count: value.count, items: value.rows },
       error: null,
@@ -55,7 +59,9 @@ module.exports.postItem = async (req, res) => {
         .json({ error: "Value should be an array of strings" });
     }
 
-    await dbHelper.postItem(req.body?.value);
+    const user_id = req.user.unique_id;
+
+    await dbHelper.postItem(user_id, req.body?.value);
     return res
       .status(201)
       .json({ message: `Item added successfully`, error: null, status: "OK" });

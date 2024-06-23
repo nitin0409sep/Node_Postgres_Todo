@@ -11,11 +11,13 @@ const {
   deleteAllItems,
 } = require("../controller/todo.controller");
 
+const { authenticateUser } = require('../middlewares/authorization.middleware');
+
 // Routes
 const route = express.Router();
 
 // Get All or Specific Item By ID
-route.get("/view-list/:id?", (req, res, next) => {
+route.get("/view-list/:id?", authenticateUser, (req, res, next) => {
   const { id } = req.params;
   if (id) {
     getSpecificItem(req, res, next);
@@ -25,10 +27,10 @@ route.get("/view-list/:id?", (req, res, next) => {
 });
 
 // Add Item or Items
-route.post("/addItem", postItem);
+route.post("/addItem", authenticateUser, postItem);
 
 // Update Item
-route.put("/updateItem/:id?", (req, res, next) => {
+route.put("/updateItem/:id?", authenticateUser, (req, res, next) => {
   if (!req.params.id) {
     return res.status(400).json({ message: "ID parameter is required" });
   }
@@ -38,7 +40,7 @@ route.put("/updateItem/:id?", (req, res, next) => {
 );
 
 // Delete Item
-route.delete("/deleteItem/:id?", (req, res, next) => {
+route.delete("/deleteItem/:id?", authenticateUser, (req, res, next) => {
   if (req.query.id && req.params.id) {
     return res.status(400).json({
       message:
@@ -60,6 +62,6 @@ route.delete("/deleteItem/:id?", (req, res, next) => {
 });
 
 // Delete All Items
-route.delete("/deleteAllItems", deleteAllItems);
+route.delete("/deleteAllItems", authenticateUser, deleteAllItems);
 
 module.exports = route;

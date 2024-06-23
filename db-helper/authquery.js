@@ -1,12 +1,10 @@
 const { pool } = require('../db-config/connection');
 const bcrypt = require('bcrypt');
 
-
 // GET ALL USERS
 module.exports.getUsers = async () => {
     try {
         const query = 'Select * from users';
-
         const { rows } = await pool.query(query);
         return rows;
     } catch (err) {
@@ -22,11 +20,7 @@ module.exports.registerUser = async (user_name, email, password) => {
         const result = await pool.query(query, [user_name, email, password]);
 
         // Check if the insertion was successful
-        if (result.rowCount > 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return result.rowCount > 0 ? true : false;
     } catch (error) {
         console.log(error);
         throw error;
@@ -41,10 +35,7 @@ module.exports.loginUser = async (email, password) => {
 
         // Validate Password
         const validPassword = await bcrypt.compare(password, rows[0].password);
-
-        if (!validPassword) return false
-
-        return true;
+        return validPassword ? true : false;
     } catch (err) {
         throw err;
     }
@@ -53,9 +44,9 @@ module.exports.loginUser = async (email, password) => {
 // Check user already exists or not
 module.exports.checkUserExists = async (email) => {
     try {
-        const query = 'SELECT email FROM users WHERE email = $1';
+        const query = 'SELECT * FROM users WHERE email = $1';
         const { rows } = await pool.query(query, [email]);
-        return rows.length > 0;
+        return rows[0] ?? false;
     } catch (err) {
         console.log(err);
         throw err;

@@ -1,14 +1,17 @@
 const { pool } = require("../db-config/connection");
 
 // Get ALl Items
-module.exports.getAllItems = async (page = 0, limit = 10) => {
+module.exports.getAllItems = async (user_id, page = 0, limit = 10) => {
   try {
     const offset = page * limit;
+
     //   const query = `SELECT * FROM todo where value LIKE '%${search}%'`;
-    const query = `SELECT * FROM todo ORDER BY VALUE limit ${limit} OFFSET ${offset}`;
-    const countQuery = `SELECT COUNT(*) FROM TODO`;
-    const { rows } = await pool.query(query);
-    const toalCount = await pool.query(countQuery);
+    const query = `SELECT * FROM todo WHERE user_id = $1 ORDER BY id LIMIT $2 OFFSET $3`;
+    const values = [user_id, limit, offset];
+
+    const countQuery = `SELECT COUNT(*) FROM TODO where user_id = $1`;
+    const { rows } = await pool.query(query, values);
+    const toalCount = await pool.query(countQuery, [user_id]);
 
     return {
       count: toalCount.rows[0].count,
@@ -21,31 +24,35 @@ module.exports.getAllItems = async (page = 0, limit = 10) => {
 };
 
 // Get Specific Item By ID
-module.exports.getSpecificItem = async (id) => {
+module.exports.getSpecificItem = async (user_id, id) => {
   try {
-    const query = `Select * from todo where id = ${id}`;
-    const { rows } = await pool.query(query);
-    const toalCount = rows.length;
+    const query = `SELECT * FROM todo WHERE user_id = $1 AND id = $2`;
+    const values = [user_id, id];
+    const { rows } = await pool.query(query, values);
+
+    const totalCount = rows.length;
 
     return {
-      count: toalCount,
+      count: totalCount,
       rows: rows,
     };
   } catch (err) {
-    console.error("Error executing query:", error);
+    console.error("Error executing query:", err);
     throw err;
   }
 };
 
 // Add Item or Items
-module.exports.postItem = async (value) => {
+module.exports.postItem = async (user_id, value) => {
   try {
     await pool.query("BEGIN");
 
+    console.log(user_id, value);
+
     for (let item of value) {
-      const query = `
-          insert into todo(value)
-          VALUES ('${item}')`;
+      const query = ` 
+          insert into todo(user_id, value)
+          VALUES ('${user_id}', '${item}')`;
 
       const result = await pool.query(query);
 

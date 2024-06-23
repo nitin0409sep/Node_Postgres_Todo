@@ -1,6 +1,7 @@
 const dbHelper = require('../db-helper/authquery');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const jwtTokens = require('../utils/jwt-helper');
 
 // GET ALL USERS
 module.exports.getUsers = async (req, res, next) => {
@@ -44,8 +45,16 @@ module.exports.loginUser = async (req, res, next) => {
         // Error handling for loginUser
         if (!isValidPassword) return res.status(401).json({ error: "Invalid Password" });
 
+        // Tokens
+        let tokens = jwtTokens.jwtTokens(isUser);
+
+        // Set Refresh Token's Cookie
+        res.cookie('refresh_token', tokens.refreshToken, { httpOnly: true })
+
+        console.log(tokens);
+
         // Successful login response
-        return res.status(200).json({ message: "User Logged In Successfully!", error: null, status: "OK" });
+        return res.status(200).json({ message: "User Logged In Successfully!", token: tokens.accessToken, error: null, status: "OK" });
     } catch (err) {
         // Generic error handling for any unexpected errors
         res.status(500).json({ error: "Failed to login" });
