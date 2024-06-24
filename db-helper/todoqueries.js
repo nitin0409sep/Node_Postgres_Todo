@@ -64,7 +64,8 @@ module.exports.postItem = async (user_id, value) => {
 
     const response = await pool.query("COMMIT");
     return response;
-  } catch (error) {
+  } catch (err) {
+    console.log(err);
     throw error;
   }
 };

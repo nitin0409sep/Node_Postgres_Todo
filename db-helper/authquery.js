@@ -16,11 +16,12 @@ module.exports.getUsers = async () => {
 // REGISTER USERS
 module.exports.registerUser = async (user_name, email, password) => {
     try {
-        const query = `INSERT INTO USERS(USER_NAME, EMAIL, PASSWORD) VALUES($1, $2, $3)`;
+        const query = `INSERT INTO USERS(USER_NAME, EMAIL, PASSWORD) VALUES($1, $2, $3) RETURNING *`;
+
         const result = await pool.query(query, [user_name, email, password]);
 
         // Check if the insertion was successful
-        return result.rowCount > 0 ? true : false;
+        return result.rowCount > 0 ? result.rows[0] : false;
     } catch (error) {
         console.log(error);
         throw error;

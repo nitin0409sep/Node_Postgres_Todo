@@ -1,3 +1,8 @@
+# NODE MODULES
 /node_modules
 
+# ENVIROMENT FILE
 /.env
+
+# HELPER FILE
+/utils/helper.txt

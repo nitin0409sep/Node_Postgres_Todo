@@ -51,8 +51,6 @@ module.exports.loginUser = async (req, res, next) => {
         // Set Refresh Token's Cookie
         res.cookie('refresh_token', tokens.refreshToken, { httpOnly: true })
 
-        console.log(tokens);
-
         // Successful login response
         return res.status(200).json({ message: "User Logged In Successfully!", token: tokens.accessToken, error: null, status: "OK" });
     } catch (err) {
@@ -87,7 +85,20 @@ module.exports.registerUser = async (req, res, next) => {
             const registered = await dbHelper.registerUser(user_name, email, hashedPassword);
 
             if (registered) {
-                return res.status(200).json({ message: "User registered successfully", error: null });
+                // Generate Token
+                const tokens = jwtTokens.jwtTokens(registered); // Access Token & Refresh Token
+
+                // Set Refresh Token's Cookie
+                res.cookie('refresh_token', tokens.refreshToken, { httpOnly: true, sameSite: 'none', secure: true })
+
+                // Successful registered response
+                return res.status(200).json({
+                    message: "User registered successfully",
+                    token: tokens.accessToken,
+                    error: null,
+                    status: "ok"
+                });
+
             } else {
                 return res.status(500).json({ error: "Failed to register user" });
             }
