@@ -21,7 +21,7 @@ app.use(express.json()); // Use this middleware to parse incoming requests with 
 // Routes
 const authRoutes = require("../routes/auth.route.js");
 const profileRoutes = require("../routes/profile.route.js");
-const todoRoutes = require("../routes/to-do.routes.js");
+const todoRoutes = require("../routes/user_todo.routes.js");
 
 app.use('/api/data/users', authRoutes);
 app.use('/api/data/profile', profileRoutes);

@@ -79,13 +79,20 @@ module.exports.updateItem = async (req, res) => {
     const { value } = req.body;
 
     if (value) {
-      await dbHelper.updateItem(req.params.id, req.body.value);
+      const user_id = req.user.unique_id;
 
-      res.status(200).json({
-        message: `Item with ID ${id} updated successfully`,
+      const result = await dbHelper.updateItem(user_id, id, value);
+
+      return result.success ? res.status(200).json({
+        message: result.message,
         error: null,
         status: "OK",
-      });
+      })
+        : res.status(400).json({
+          error: result.message,
+        });
+
+
     } else {
       return res.status(400).json({ error: "Invalid Data" });
     }
@@ -101,12 +108,23 @@ module.exports.deleteItem = async (req, res) => {
   try {
     const { id } = req.params;
 
-    await dbHelper.deleteItem(id);
-    return res.status(200).json({
-      message: `Item with ID ${id} deleted successfully`,
-      error: null,
-      status: "OK",
-    });
+    const user_id = req.user.unique_id;
+
+    const result = await dbHelper.deleteItem(user_id, id);
+
+    if (result.success) {
+      return res.status(200).json({
+        message: result.message,
+        error: null,
+        status: "OK",
+      });
+    } else {
+      return res.status(404).json({
+        error: result.message,
+        status: "Not Found",
+      });
+    }
+
   } catch (err) {
     console.log(err);
     res
@@ -119,13 +137,24 @@ module.exports.deleteItem = async (req, res) => {
 module.exports.deleteMultipleItems = async (req, res) => {
   try {
     const ids = req.query.id.split(",").map(Number);
-    await dbHelper.deleteMultipleItems(ids, res);
 
-    res.json({
-      message: `Items with IDs ${ids.join(", ")} deleted successfully`,
-      error: null,
-      status: "OK",
-    });
+    const user_id = req.user.unique_id;
+
+    const result = await dbHelper.deleteMultipleItems(user_id, ids, res);;
+
+    if (result.success) {
+      return res.status(200).json({
+        message: result.message,
+        error: null,
+        status: "OK",
+      });
+    } else {
+      return res.status(404).json({
+        error: result.message,
+        status: "Not Found",
+      });
+    }
+
   } catch (err) {
     res
       .status(500)
@@ -133,10 +162,12 @@ module.exports.deleteMultipleItems = async (req, res) => {
   }
 };
 
-// DELETE ALL ITEMS
+// DELETE ALL ITEMS -- FOR ADMIN ONLY
 module.exports.deleteAllItems = async (req, res) => {
   try {
-    const value = await dbHelper.deleteAllItems();
+    const user_id = req.user.unique_id;
+
+    const value = await dbHelper.deleteAllItems(user_id, req, res);
 
     res.json({
       message: value.message,

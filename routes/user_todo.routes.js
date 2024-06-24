@@ -9,7 +9,7 @@ const {
   deleteItem,
   deleteMultipleItems,
   deleteAllItems,
-} = require("../controller/todo.controller");
+} = require("../controller/user_todo.controller");
 
 // Middleware
 const { authenticateUser } = require('../middlewares/authorization.middleware');

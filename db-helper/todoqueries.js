@@ -46,9 +46,7 @@ module.exports.getSpecificItem = async (user_id, id) => {
 module.exports.postItem = async (user_id, value) => {
   try {
     await pool.query("BEGIN");
-
-    console.log(user_id, value);
-
+    
     for (let item of value) {
       const query = ` 
           insert into todo(user_id, value)
@@ -71,25 +69,55 @@ module.exports.postItem = async (user_id, value) => {
 };
 
 // Update Item
-module.exports.updateItem = async (id, value) => {
+module.exports.updateItem = async (user_id, id, value) => {
   try {
     // string literals should be enclosed in single quotes, not double quotes
-    const query = `update todo set value = '${value}' where id = ${id}`;
-    const res = await pool.query(query);
+    const query = `update todo set value = $1 where user_id = $2 AND id = $3 returning *`;
+    const values = [value, user_id, id]
+    const res = await pool.query(query, values);
 
-    return res;
+    if (res.rowCount === 0) {
+      return {
+        success: false,
+        message: "No rows updated. The user_id or item id might be incorrect."
+      };
+    }
+
+    return {
+      success: true,
+      data: res.rows[0],
+      message: `Item with ID ${id} Update successful.`
+    };
   } catch (error) {
     throw error;
   }
 };
 
 // Delete Item
-module.exports.deleteItem = async (id) => {
+module.exports.deleteItem = async (user_id, id) => {
   try {
-    const query = `Delete from todo where id = ${id}`;
-    const res = await pool.query(query);
+    const { rows } = await pool.query('Select count(value) from todo where user_id = $1', [user_id]);
 
-    return res;
+    if (!(+rows[0].count)) {
+      return { success: false, message: "No Items Exists" };
+    };
+
+    const query = `Delete from todo where user_id = $1 AND id = $2`;
+    const values = [user_id, id];
+    const res = await pool.query(query, values);
+
+    if (res.rowCount === 0) {
+      return {
+        success: false,
+        message: "No rows deleted. The user_id or item id might be incorrect."
+      };
+    }
+
+    return {
+      success: true,
+      data: res.rows[0],
+      message: `Item with ID ${id} deleted successful.`
+    };
   } catch (err) {
     throw err;
   }
@@ -98,22 +126,35 @@ module.exports.deleteItem = async (id) => {
 // Delete Multiple Items
 module.exports.deleteMultipleItems = async (ids, res) => {
   try {
+    const { rows } = await pool.query('Select count(value) from todo where user_id = $1', [user_id]);
+
+    if (!(+rows[0].count)) {
+      return { success: false, message: "No Items Exists" };
+    };
+
     await pool.query("BEGIN");
 
     for (const id of ids) {
-      const query = `DELETE FROM todo WHERE id = ${id}`;
-      const result = await pool.query(query);
+      const query = `DELETE FROM todo WHERE user_id = $1 AND id = $2`;
+      const values = [user_id, id];
+      const result = await pool.query(query, values);
 
       if (result.rowCount === 0) {
         await pool.query("ROLLBACK");
-        return res
-          .status(500)
-          .json({ error: `Item with ID ${id} does not exist` });
+        return {
+          success: false,
+          message: "No rows deleted. The user_id or item id might be incorrect."
+        };
       }
     }
 
-    const response = await pool.query("COMMIT");
-    return response;
+    await pool.query("COMMIT");
+    return {
+      success: true,
+      message: `Item with ID ${id} deleted successful.`,
+      error: null,
+    };
+
   } catch (err) {
     await pool.query("ROLLBACK");
     console.error(err);
@@ -121,19 +162,19 @@ module.exports.deleteMultipleItems = async (ids, res) => {
   }
 };
 
-// Delete All Items
+// Delete All Items -- FOR ADMIN ONLT
 module.exports.deleteAllItems = async (req, res) => {
   try {
     const { rows } = await pool.query('Select count(value) from todo');
 
     if (!(+rows[0].count)) {
-      return { message: "No Items Exists" };
+      return { success: false, message: "No Items Exists" };
     };
 
     const query = `TRUNCATE TABLE todo;`;
     await pool.query(query);
 
-    return { message: "All items have been deleted successfully" };
+    return { success: 'true', message: "All items have been deleted successfully" };
   } catch (err) {
     return res.status(500).json({ error: "An error occurred while deleting items" });
   }
