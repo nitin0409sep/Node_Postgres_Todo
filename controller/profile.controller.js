@@ -1,11 +1,8 @@
-const dbHelper = require('../db-helper/profilequery')
-
 module.exports.getProfile = async (req, res) => {
     try {
-        const data = await dbHelper.getProfile();
-        console.log(data);
+        const { user_name, email } = req.user;
         return res.status(200).json({
-            data: data.rows[0],
+            user: { user_name, email },
             error: null,
             status: "OK",
         });

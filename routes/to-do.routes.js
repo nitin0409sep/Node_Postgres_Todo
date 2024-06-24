@@ -11,6 +11,7 @@ const {
   deleteAllItems,
 } = require("../controller/todo.controller");
 
+// Middleware
 const { authenticateUser } = require('../middlewares/authorization.middleware');
 
 // Routes
