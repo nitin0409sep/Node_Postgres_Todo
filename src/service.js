@@ -23,7 +23,7 @@ const authRoutes = require("../routes/auth.route.js");
 const profileRoutes = require("../routes/profile.route.js");
 const todoRoutes = require("../routes/user_todo.routes.js");
 
-app.use('/api/data/users', authRoutes);
+app.use('/api/data/auth', authRoutes);
 app.use('/api/data/profile', profileRoutes);
 app.use('/api/data/todo', todoRoutes);
 

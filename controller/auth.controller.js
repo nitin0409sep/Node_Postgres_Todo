@@ -49,8 +49,13 @@ module.exports.loginUser = async (req, res, next) => {
         let tokens = jwtTokens.jwtTokens(isUser);
 
         // Set Refresh Token's Cookie
-        res.cookie('refresh_token', tokens.refreshToken, { httpOnly: true })
-
+        res.cookie('refresh_token', 'refresh_token', {
+            maxAge: new Date() * 0.001 + 300,
+            domain: 'mydomain.com',
+            secure: true,
+            sameSite:'none',
+          });
+        
         // Successful login response
         return res.status(200).json({ message: "User Logged In Successfully!", token: tokens.accessToken, error: null, status: "OK" });
     } catch (err) {
