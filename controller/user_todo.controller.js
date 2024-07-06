@@ -165,9 +165,7 @@ module.exports.deleteMultipleItems = async (req, res) => {
 // DELETE ALL ITEMS -- FOR ADMIN ONLY
 module.exports.deleteAllItems = async (req, res) => {
   try {
-    const user_id = req.user.unique_id;
-
-    const value = await dbHelper.deleteAllItems(user_id, req, res);
+    const value = await dbHelper.deleteAllItems(req, res);
 
     res.json({
       message: value.message,

@@ -1,0 +1,7 @@
+/* Replace with your SQL commands */
+
+ALTER TABLE todo ALTER COLUMN id DROP DEFAULT;
+DROP SEQUENCE IF EXISTS todo_id_seq;
+
+ALTER TABLE todo
+ALTER COLUMN id TYPE SERIAL
