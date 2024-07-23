@@ -53,15 +53,32 @@ module.exports.getSpecificItem = async (req, res) => {
 module.exports.postItem = async (req, res) => {
   try {
     // Request body should be an array
-    if (!Array.isArray(req.body.value)) {
+    if (!Array.isArray(req.body)) {
       return res
         .status(400)
         .json({ error: "Value should be an array of strings" });
     }
 
+    // Iterate over each item in the array
+    for (const item of req.body) {
+      const { value, dead_line_date, priority, progress, status } = item;
+
+      // Check if any of the required fields are missing
+      if (!value || !dead_line_date || !priority || !progress || !status) {
+        const missingFields = [];
+        if (!value) missingFields.push('value');
+        if (!dead_line_date) missingFields.push('dead_line_date');
+        if (!priority) missingFields.push('priority');
+        if (!progress) missingFields.push('progress');
+        if (!status) missingFields.push('status');
+
+        return res.status(400).json({ error: `Each item must provide ${missingFields.join(', ')}` });
+      }
+    }
+
     const user_id = req.user.unique_id;
 
-    await dbHelper.postItem(user_id, req.body?.value);
+    await dbHelper.postItem(user_id, req.body);
     return res
       .status(201)
       .json({ message: `Item added successfully`, error: null, status: "OK" });
@@ -76,26 +93,24 @@ module.exports.postItem = async (req, res) => {
 module.exports.updateItem = async (req, res) => {
   try {
     const { id } = req.params;
-    const { value } = req.body;
+    const { value, dead_line_date, priority, progress, status } = req.body;
 
-    if (value) {
-      const user_id = req.user.unique_id;
-
-      const result = await dbHelper.updateItem(user_id, id, value);
-
-      return result.success ? res.status(200).json({
-        message: result.message,
-        error: null,
-        status: "OK",
-      })
-        : res.status(400).json({
-          error: result.message,
-        });
-
-
-    } else {
-      return res.status(400).json({ error: "Invalid Data" });
+    // Check if any of the required fields are missing
+    if (!value && !dead_line_date && !priority && !progress && !status) {
+      return res.status(400).json({ error: `Choosen nothing to update.` });
     }
+
+    const user_id = req.user.unique_id;
+    const result = await dbHelper.updateItem(user_id, id, req.body);
+
+    return result.success ? res.status(200).json({
+      message: result.message,
+      error: null,
+      status: "OK",
+    })
+      : res.status(400).json({
+        error: result.message,
+      });
   } catch (error) {
     return res
       .status(500)

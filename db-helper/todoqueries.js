@@ -43,16 +43,21 @@ module.exports.getSpecificItem = async (user_id, id) => {
 };
 
 // Add Item or Items
-module.exports.postItem = async (user_id, value) => {
+module.exports.postItem = async (user_id, valuesData) => {
   try {
     await pool.query("BEGIN");
-    
-    for (let item of value) {
-      const query = ` 
-          insert into todo(user_id, value)
-          VALUES ('${user_id}', '${item}')`;
 
-      const result = await pool.query(query);
+    for (let item of valuesData) {
+
+      const { value, dead_line_date, priority, progress, status } = item;
+
+      const values = [user_id, value, dead_line_date, priority, progress, status];
+
+      const query = ` 
+          insert into todo(user_id, value, dead_line_date, priority, progress, status)
+          VALUES ($1, $2, $3, $4, $5, $6)`;
+
+      const result = await pool.query(query, values);
 
       if (result.rowCount === 0) {
         await pool.query("ROLLBACK");
@@ -69,12 +74,19 @@ module.exports.postItem = async (user_id, value) => {
 };
 
 // Update Item
-module.exports.updateItem = async (user_id, id, value) => {
+module.exports.updateItem = async (user_id, id, fields) => {
   try {
-    // string literals should be enclosed in single quotes, not double quotes
-    const query = `update todo set value = $1 where user_id = $2 AND id = $3 returning *`;
-    const values = [value, user_id, id]
-    const res = await pool.query(query, values);
+    const keys = Object.keys(fields)
+    const values = Object.values(fields);
+
+    //? Construct the SET clause dynamically
+    const setClause = keys.map((key, index) => `${key} = $${index + 1}`).join(', ');
+
+    //? string literals should be enclosed in single quotes, not double quotes
+    const query = `update todo set ${setClause} where user_id = $${keys.length + 1} AND id = $${keys.length + 2} returning *`;
+    const dbValues = [...values, user_id, id];
+
+    const res = await pool.query(query, dbValues);
 
     if (res.rowCount === 0) {
       return {
@@ -162,7 +174,7 @@ module.exports.deleteMultipleItems = async (ids, res) => {
   }
 };
 
-// Delete All Items -- FOR ADMIN ONLT
+// Delete All Items
 module.exports.deleteAllItems = async (req, res) => {
   try {
     const { rows } = await pool.query('Select count(value) from todo');
