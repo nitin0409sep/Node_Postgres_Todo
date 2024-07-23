@@ -1,0 +1,8 @@
+/* Replace with your SQL commands */
+
+ALTER TABLE TODO
+ADD COLUMN added_date DATE NOT NULL DEFAULT CURRENT_DATE,
+ADD COLUMN priority VARCHAR(100) NOT NULL,
+ADD COLUMN dead_line_date DATE NOT NULL,
+ADD COLUMN progress INTEGER,
+ADD COLUMN status VARCHAR(100);
