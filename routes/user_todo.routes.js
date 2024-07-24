@@ -7,7 +7,7 @@ const {
   postItem,
   updateItem,
   deleteItem,
-  deleteMultipleItems,
+  // deleteMultipleItems,
   deleteAllItems,
 } = require("../controller/user_todo.controller");
 
@@ -57,9 +57,10 @@ route.delete("/deleteItem/:id?", authenticateUser, (req, res, next) => {
 
   if (req.params.id !== undefined) {
     deleteItem(req, res);
-  } else if (req.query.id) {
-    deleteMultipleItems(req, res);
   }
+  //  else if (req.query.id) {
+  //   deleteMultipleItems(req, res);
+  // }
 });
 
 // Delete All Items

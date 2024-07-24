@@ -84,7 +84,7 @@ module.exports.updateItem = async (user_id, id, fields) => {
 
     //? string literals should be enclosed in single quotes, not double quotes
     const query = `update todo set ${setClause} where user_id = $${keys.length + 1} AND id = $${keys.length + 2} returning *`;
-    const dbValues = [...values, user_id, id];
+    const dbValues = [...values, user_id, +id];
 
     const res = await pool.query(query, dbValues);
 
@@ -135,8 +135,8 @@ module.exports.deleteItem = async (user_id, id) => {
   }
 };
 
-// Delete Multiple Items
-module.exports.deleteMultipleItems = async (ids, res) => {
+// Delete All Items
+module.exports.deleteAllItems = async (user_id) => {
   try {
     const { rows } = await pool.query('Select count(value) from todo where user_id = $1', [user_id]);
 
@@ -145,10 +145,11 @@ module.exports.deleteMultipleItems = async (ids, res) => {
     };
 
     await pool.query("BEGIN");
+    while (rows.length > 0) {
+      rows.length--;
 
-    for (const id of ids) {
-      const query = `DELETE FROM todo WHERE user_id = $1 AND id = $2`;
-      const values = [user_id, id];
+      const query = `DELETE FROM todo WHERE user_id = $1`;
+      const values = [user_id];
       const result = await pool.query(query, values);
 
       if (result.rowCount === 0) {
@@ -163,7 +164,7 @@ module.exports.deleteMultipleItems = async (ids, res) => {
     await pool.query("COMMIT");
     return {
       success: true,
-      message: `Item with ID ${id} deleted successful.`,
+      message: `All tasks deleted successful.`,
       error: null,
     };
 
@@ -171,23 +172,5 @@ module.exports.deleteMultipleItems = async (ids, res) => {
     await pool.query("ROLLBACK");
     console.error(err);
     throw err;
-  }
-};
-
-// Delete All Items
-module.exports.deleteAllItems = async (req, res) => {
-  try {
-    const { rows } = await pool.query('Select count(value) from todo');
-
-    if (!(+rows[0].count)) {
-      return { success: false, message: "No Items Exists" };
-    };
-
-    const query = `TRUNCATE TABLE todo;`;
-    await pool.query(query);
-
-    return { success: 'true', message: "All items have been deleted successfully" };
-  } catch (err) {
-    return res.status(500).json({ error: "An error occurred while deleting items" });
   }
 };

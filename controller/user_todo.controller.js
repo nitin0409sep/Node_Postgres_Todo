@@ -96,8 +96,15 @@ module.exports.updateItem = async (req, res) => {
     const { value, dead_line_date, priority, progress, status } = req.body;
 
     // Check if any of the required fields are missing
-    if (!value && !dead_line_date && !priority && !progress && !status) {
-      return res.status(400).json({ error: `Choosen nothing to update.` });
+    if (!value || !dead_line_date || !priority || !progress || !status) {
+      const missingFields = [];
+      if (!value) missingFields.push('value');
+      if (!dead_line_date) missingFields.push('dead_line_date');
+      if (!priority) missingFields.push('priority');
+      if (!progress) missingFields.push('progress');
+      if (!status) missingFields.push('status');
+
+      return res.status(400).json({ error: `Each item must provide ${missingFields.join(', ')}` });
     }
 
     const user_id = req.user.unique_id;
@@ -149,13 +156,11 @@ module.exports.deleteItem = async (req, res) => {
 };
 
 // DELETE MULTIPLE ITEMS
-module.exports.deleteMultipleItems = async (req, res) => {
+module.exports.deleteAllItems = async (req, res) => {
   try {
-    const ids = req.query.id.split(",").map(Number);
-
     const user_id = req.user.unique_id;
 
-    const result = await dbHelper.deleteMultipleItems(user_id, ids, res);;
+    const result = await dbHelper.deleteAllItems(user_id);
 
     if (result.success) {
       return res.status(200).json({
@@ -173,23 +178,6 @@ module.exports.deleteMultipleItems = async (req, res) => {
   } catch (err) {
     res
       .status(500)
-      .json({ message: "Error deleting items", error: error.message });
+      .json({ error: err.message });
   }
 };
-
-// DELETE ALL ITEMS -- FOR ADMIN ONLY
-module.exports.deleteAllItems = async (req, res) => {
-  try {
-    const value = await dbHelper.deleteAllItems(req, res);
-
-    res.json({
-      message: value.message,
-      error: null,
-      status: "OK",
-    });
-  } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error deleting items", error: err });
-  }
-}
