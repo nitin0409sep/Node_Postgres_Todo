@@ -1,6 +1,5 @@
-const dbHelper = require('../db-helper/authquery');
+const dbHelper = require('../database/db-helper/authquery');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const jwtTokens = require('../utils/jwt-helper');
 
 // GET ALL USERS
@@ -53,9 +52,9 @@ module.exports.loginUser = async (req, res, next) => {
             maxAge: new Date() * 0.001 + 300,
             domain: 'mydomain.com',
             secure: true,
-            sameSite:'none',
-          });
-        
+            sameSite: 'none',
+        });
+
         // Successful login response
         return res.status(200).json({ message: "User Logged In Successfully!", token: tokens.accessToken, error: null, status: "OK" });
     } catch (err) {
