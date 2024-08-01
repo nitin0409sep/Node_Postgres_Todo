@@ -1,0 +1,52 @@
+-- REMOVE ALL ROWS
+truncate users;
+truncate todo;
+TRUNCATE TABLE todo, users;
+
+-- DELERE PARTICULAR ROW
+delete from todo where id = 49
+delete from users where email = 'a@2.com';
+
+-- ADD PK
+ALTER TABLE users
+ADD PRIMARY KEY (unique_id);
+
+-- ADD CONTRAINTS
+ALTER TABLE users
+ADD CONSTRAINT unique_user_id UNIQUE (unique_id);
+
+-- RENAME COULMN
+ALTER TABLE todo
+RENAME COLUMN user_id TO unique_id;
+
+-- DROP COLUMN
+ALTER TABLE todo
+DROP COLUMN unique_id;
+
+-- ADD COULUMN
+ALTER TABLE TODO
+ADD COLUMN user_id UUID NOT NULL
+
+-- ADD FOREIGN KEY
+ALTER TABLE todo
+ADD CONSTRAINT fk_user
+FOREIGN KEY (user_id)
+REFERENCES USERS(unique_id);
+
+-- TO REMOCE EXISTING PK WHICH DONT HAVE CONSTRAINT NAME, FIRST ADD NAME THEN DROP
+SELECT constraint_name
+FROM information_schema.table_constraints
+WHERE table_name = 'users' AND constraint_type = 'PRIMARY KEY';
+
+ALTER TABLE users
+DROP CONSTRAINT users_pkey;
+
+-- SET DATA TYPE
+ALTER TABLE todo
+ALTER COLUMN user_id SET DATA TYPE UUID USING user_id::UUID;,
+ALTER COLUMN user_id SET NOT NULL;
+
+-- GET ALL DATA
+select * from todo;
+select * from migrations;
+select * from users;

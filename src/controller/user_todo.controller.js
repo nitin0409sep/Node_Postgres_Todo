@@ -1,4 +1,4 @@
-const dbHelper = require("../db-helper/todoqueries");
+const dbHelper = require("../database/db-helper/todoqueries");
 
 // GET ITEMS
 module.exports.getItems = async (req, res) => {
